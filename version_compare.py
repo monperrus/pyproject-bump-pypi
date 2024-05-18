@@ -41,7 +41,14 @@ def get_next_version(
     version_number: Version, bump_type: Literal["major", "minor", "micro"]
 ) -> str:
     """Bumps the provided version_number by one"""
-    major, minor, micro = version_number.release
+    if len(version_number.release) == 3:
+        major, minor, micro = version_number.release
+    elif len(version_number.release) == 2:
+        major, minor = version_number.release
+    elif len(version_number.release) == 1:
+        major = version_number.release
+    else:
+        raise Exception("not semver")
     if bump_type == "major":
         return f"{major + 1}.0.0"
     if bump_type == "minor":
