@@ -25,10 +25,8 @@ runs:
         bump_commit_file=$(date | shasum | cut -d ' ' -f1)
 
         python ${{ github.action_path }}/version_compare.py \
-          --main ${{ inputs.main_branch }} \
-          --bump_type ${{ inputs.bump_type }} \
           --pyproject ${{ inputs.file_to_bump }} \
-          --bump_commit_file ${bump_commit_file}
+          --bump_type ${{ inputs.bump_type }}
 
         # this file only exists if a version bump has happened
         if [ -f ${bump_commit_file} ]
@@ -39,9 +37,9 @@ runs:
           echo "bumped=false" >> "$GITHUB_OUTPUT"
         fi
 
-    - name: Commit version bump
-      if: steps.version_bumped.outputs.bumped != 'false'
-      uses: EndBug/add-and-commit@v9
-      with:
-        message: ${{ steps.version_bumped.outputs.bumped }}
-        add: ${{ inputs.file_to_bump }}
+    # - name: Commit version bump
+    #   if: steps.version_bumped.outputs.bumped != 'false'
+    #   uses: EndBug/add-and-commit@v9
+    #   with:
+    #     message: ${{ steps.version_bumped.outputs.bumped }}
+    #     add: ${{ inputs.file_to_bump }}
