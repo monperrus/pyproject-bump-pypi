@@ -27,7 +27,7 @@ jobs:
           fetch-depth: "0"
 
       - name: Version bumper
-        uses: monperrs/pyproject-bump-pypi@v0.0.1
+        uses: monperrus/pyproject-bump-pypi@last
         with:
           file_to_bump: "./pyproject.toml"
           bump_type: "minor"
