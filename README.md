@@ -1,35 +1,69 @@
 # pyproject-bump-pypi
-A GitHub Action to bump pyproject.toml version number from latest version on Pypi.
 
-Fork of https://github.com/apowis/pyproject-bump-version
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## Example Usage:
+A GitHub Action that automatically bumps the version in your `pyproject.toml` by comparing the **latest published version on PyPI** with your local file — so your next release is always one step ahead of what is already published.
+
+## Description
+
+`pyproject-bump-pypi` reads the package name from your `pyproject.toml`, fetches the latest published version from PyPI, computes the next version according to the requested bump type (`major`, `minor`, or `micro`), and writes it back into `pyproject.toml`. Because the new version is derived from the PyPI version rather than the local one, the action stays in sync with reality even if the file was edited manually between releases.
+
+## How It Works
+
+1. The package name is read from `[project].name` in `pyproject.toml`.
+2. The latest published version is fetched from `https://pypi.org/pypi/<name>/json`.
+3. The next version is computed by incrementing the PyPI version according to `bump_type`.
+4. The result is written back into `[project].version` in `pyproject.toml`.
+
+**First-publish edge case:** if the package has never been published to PyPI (HTTP 404), the action uses the local version as the baseline and skips bumping, so a brand-new project is not accidentally incremented before its first release.
+
+## Inputs
+
+| Input | Required | Description |
+|-------|----------|-------------|
+| `file_to_bump` | ✅ | Path to the `pyproject.toml` file to update (e.g. `"./pyproject.toml"`). |
+| `bump_type` | ✅ | Version component to increment. Allowed values: `major`, `minor`, `micro`. |
+
+## Outputs
+
+| Output | Description |
+|--------|-------------|
+| `bumped` | `false` if no bump was performed (e.g. first publish). Otherwise the commit message string, e.g. `"Bumped version from 1.2.0 to 1.3.0"`. |
+
+## Usage
 
 ```yaml
-name: "Version bumper"
+name: Bump version on push to main
+
 on:
-  pull_request:
+  push:
     branches:
       - main
-    paths:
-      - 'python_project/**'
-      - './pyproject.toml'
 
 jobs:
   bump-version:
-    if: github.event.pull_request.merged == false
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: "0"
+      - uses: actions/checkout@v4
 
-      - name: Version bumper
+      - name: Bump pyproject.toml version
+        id: bump
         uses: monperrus/pyproject-bump-pypi@last
         with:
           file_to_bump: "./pyproject.toml"
-          bump_type: "minor"
+          bump_type: "minor"   # or "major" / "micro"
 ```
 
+## Requirements
+
+Your `pyproject.toml` must declare both fields in the `[project]` table (standard [PEP 621](https://peps.python.org/pep-0621/) format):
+
+```toml
+[project]
+name = "your-package-name"
+version = "1.2.3"
+```
+
+## License
+
+MIT. Forked from [apowis/pyproject-bump-version](https://github.com/apowis/pyproject-bump-version).
