@@ -13,9 +13,16 @@ def get_main_version(project_file: Path) -> Version:
     """
     Gets the last version on PyPi eg https://pypi.org/pypi/crawler-user-agents/json
     curl https://pypi.org/pypi/crawler-user-agents/json| jq .info.version
+    Falls back to the local version when the package has not been published yet (HTTP 404).
     """
     project_name = get_project_name(project_file)
-    pypi_version = requests.get("https://pypi.org/pypi/"+project_name+"/json").json()["info"]["version"]
+    response = requests.get("https://pypi.org/pypi/" + project_name + "/json")
+    if response.status_code == 404:
+        # Package not yet published – treat the current local version as the baseline
+        print(f"Package '{project_name}' not found on PyPI (first publish). Using local version as baseline.")
+        return get_current_version(project_file)
+    response.raise_for_status()
+    pypi_version = response.json()["info"]["version"]
     return parse(pypi_version)
 
 
@@ -100,9 +107,15 @@ def main():
     main_version = get_main_version(pyproject)
     local_version = get_current_version(pyproject)
 
-    new_version = get_next_version(main_version, bump_type)
     print(f"Pypi local version: {local_version}")
     print(f"Pypi current version: {main_version}")
+
+    if main_version == local_version:
+        # First publish: the package was not on PyPI yet, so no bump is needed.
+        print("First publish detected: local version matches PyPI baseline. No version bump needed.")
+        return
+
+    new_version = get_next_version(main_version, bump_type)
     print(f"Next version: {new_version}")
     bump_pyproject(pyproject, new_version)
     if bump_commit_file and os.path.exists(bump_commit_file):
