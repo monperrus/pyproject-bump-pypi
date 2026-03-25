@@ -43,14 +43,8 @@ on:
 jobs:
   bump-version:
     runs-on: ubuntu-latest
-    # Allow the job to push back the updated pyproject.toml
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          # Fetch the full history so the commit can be pushed
-          fetch-depth: 0
 
       - name: Bump pyproject.toml version
         id: bump
@@ -58,18 +52,7 @@ jobs:
         with:
           file_to_bump: "./pyproject.toml"
           bump_type: "minor"   # or "major" / "micro"
-
-      # Commit the updated pyproject.toml back to the branch.
-      # Remove this step if you handle the commit elsewhere.
-      - name: Commit version bump
-        if: steps.bump.outputs.bumped != 'false'
-        uses: EndBug/add-and-commit@v9
-        with:
-          message: ${{ steps.bump.outputs.bumped }}
-          add: "./pyproject.toml"
 ```
-
-> **Permissions note:** The workflow needs `contents: write` (or an equivalent token) to push the commit. When using the default `GITHUB_TOKEN` this is sufficient for most repositories; for forks you may need to supply a personal access token via `token:` in the checkout step.
 
 ## Requirements
 
@@ -84,4 +67,3 @@ version = "1.2.3"
 ## License
 
 MIT. Forked from [apowis/pyproject-bump-version](https://github.com/apowis/pyproject-bump-version).
-
