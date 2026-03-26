@@ -1,0 +1,22 @@
+name: Auto tag on push to main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create version tag
+        id: tag
+        uses: monperrus/gako-tag-action@main
+        with:
+          bump_type: minor
