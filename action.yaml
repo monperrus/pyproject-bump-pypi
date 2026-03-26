@@ -26,7 +26,8 @@ runs:
 
         python ${{ github.action_path }}/version_compare.py \
           --pyproject ${{ inputs.file_to_bump }} \
-          --bump_type ${{ inputs.bump_type }}
+          --bump_type ${{ inputs.bump_type }} \
+          --bump_commit_file ${bump_commit_file}
 
         # this file only exists if a version bump has happened
         if [ -f ${bump_commit_file} ]

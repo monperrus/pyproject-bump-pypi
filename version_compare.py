@@ -110,15 +110,15 @@ def main():
     print(f"Pypi local version: {local_version}")
     print(f"Pypi current version: {main_version}")
 
-    if main_version == local_version:
-        # First publish: the package was not on PyPI yet, so no bump is needed.
-        print("First publish detected: local version matches PyPI baseline. No version bump needed.")
+    if local_version > main_version:
+        # Local version is already ahead of PyPI (e.g. already bumped). No bump needed.
+        print(f"Local version {local_version} is already ahead of PyPI version {main_version}. No version bump needed.")
         return
 
     new_version = get_next_version(main_version, bump_type)
     print(f"Next version: {new_version}")
     bump_pyproject(pyproject, new_version)
-    if bump_commit_file and os.path.exists(bump_commit_file):
+    if bump_commit_file:
         bump_message = (
             f"Bumped version from {local_version} to {new_version}"
         )
